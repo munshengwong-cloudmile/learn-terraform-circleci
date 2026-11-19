@@ -10,7 +10,7 @@ terraform {
   }
 
   backend "remote" {
-
+    type = "remote"
     organization = "wongms-sandbox"
 
     workspaces {
