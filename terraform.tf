@@ -9,5 +9,13 @@ terraform {
     }
   }
 
-  required_version = "~> 1.2"
+  backend "remote" {
+    organization = "wongms-sandbox"
+
+    workspaces {
+      name = "learn-terraform-circleci"
+    }
+  }
+
+  required_version = ">= 1.0.0"
 }

@@ -1,84 +1,46 @@
-# Copyright (c) HashiCorp, Inc.
-# SPDX-License-Identifier: MIT
-
 version: 2.1
 
-jobs:
-  plan-apply:
-    working_directory: /tmp/project
-    docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:light
-    steps:
-      - checkout
-      - run:
-          name: terraform init & plan
-          command: |
-            terraform init -input=false
-            terraform plan -out tfapply -var-file terraform.tfvars
-      - persist_to_workspace:
-          root: .
-          paths:
-            - .
+orbs:
+  terraform: circleci/terraform@3.7.0
 
-  apply:
-    docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:light
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          name: terraform
-          command: |
-            terraform apply -auto-approve tfapply
-      - persist_to_workspace:
-          root: .
-          paths:
-            - .
-
-  plan-destroy:
-    docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:light
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          name: terraform create destroy plan
-          command: |
-            terraform plan -destroy -out tfdestroy -var-file terraform.tfvars
-      - persist_to_workspace:
-          root: .
-          paths:
-            - .
-
-  destroy:
-    docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:light
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          name: terraform destroy
-          command: |
-            terraform apply -auto-approve tfdestroy
 workflows:
-  version: 2
-  plan_approve_apply:
+  deploy_infrastructure:
     jobs:
-      - plan-apply
-      - hold-apply:
+      # format to ensure codebase redability
+      - terraform/fmt:
+          checkout: true
+          tag: "1.5.0"
+
+      # check syntax and validate the configuration files
+      - terraform/validate:
+          checkout: true
+          tag: "1.5.0"
+          requires:
+            - terraform/fmt
+
+      # generates the speculative execution plan
+      - terraform/plan:
+          checkout: true
+          tag: "1.5.0"
+          persist-workspace: true # saves the plan file for the apply step
+          requires:
+            - terraform/validate
+
+      # manual approval
+      - hold-for-approval:
           type: approval
           requires:
-            - plan-apply
-      - apply:
+            - terraform/plan
+          filters:
+            branches:
+              only: main # only require approval on the main branch
+
+      # executes the saved plan after approval
+      - terraform/apply:
+          attach-workspace: true
+          tag: "1.5.0"
           requires:
-            - hold-apply
-      - plan-destroy:
-          requires:
-            - apply
-      - hold-destroy:
-          type: approval
-          requires:
-            - plan-destroy
-      - destroy:
-          requires:
-            - hold-destroy
+            - hold-for-approval
+          filters:
+            branches:
+              only: main
