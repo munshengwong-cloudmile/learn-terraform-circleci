@@ -9,5 +9,14 @@ terraform {
     }
   }
 
+  cloud {
+    
+    organization = "wongms-sandbox"
+
+    workspaces {
+      name = "learn-terraform-circleci"
+    }
+  }
+  
   required_version = "~> 1.2"
 }
