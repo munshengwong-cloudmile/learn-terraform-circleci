@@ -67,7 +67,7 @@ resource "aws_s3_object" "app" {
     aws_s3_bucket_public_access_block.app,
     aws_s3_bucket_acl.app
   ]
-  
+
   acl          = "public-read"
   key          = "index.html"
   bucket       = aws_s3_bucket.app.id

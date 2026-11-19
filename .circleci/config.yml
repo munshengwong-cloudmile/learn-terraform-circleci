@@ -23,7 +23,7 @@ workflows:
           requires:
             - terraform/validate
 
-      # Manual Approval
+      # manual approval
       - hold-for-approval:
           type: approval
           requires:
