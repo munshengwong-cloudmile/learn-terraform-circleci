@@ -9,7 +9,7 @@ terraform {
     }
   }
 
-  cloud {
+  backend "remote" {
 
     organization = "wongms-sandbox"
 
