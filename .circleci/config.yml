@@ -9,19 +9,19 @@ workflows:
       # format to ensure codebase redability
       - terraform/fmt:
           checkout: true
-          terraform_version: "1.5.0"
+          tag: "1.5.0"
 
       # check syntax and validate the configuration files
       - terraform/validate:
           checkout: true
-          terraform_version: "1.5.0"
+          tag: "1.5.0"
           requires:
             - terraform/fmt
 
       # generates the speculative execution plan
       - terraform/plan:
           checkout: true
-          terraform_version: "1.5.0"
+          tag: "1.5.0"
           persist-workspace: true # saves the plan file for the apply step
           requires:
             - terraform/validate
@@ -38,6 +38,7 @@ workflows:
       # executes the saved plan after approval
       - terraform/apply:
           attach-workspace: true
+          tag: "1.5.0"
           requires:
             - hold-for-approval
           filters:
