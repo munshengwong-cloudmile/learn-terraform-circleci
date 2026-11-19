@@ -35,7 +35,6 @@ workflows:
       # executes the saved plan after approval
       - terraform/apply:
           attach-workspace: true
-          context: terraform-env
           requires:
             - hold-for-approval
           filters:
